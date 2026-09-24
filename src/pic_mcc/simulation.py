@@ -110,7 +110,7 @@ class Simulation:
         return rho, phi, Ex
 
     def run(self, max_wall_seconds: float, progress_every: int = 20000,
-           stop_at_step: int | None = None) -> dict:
+           checkpoint_every: int = 10000, stop_at_step: int | None = None) -> dict:
         """Advance the simulation until cfg.n_steps is reached, the wall-clock
         budget runs out, or (if given) stop_at_step is reached -- whichever
         comes first. stop_at_step never changes cfg.n_steps or avg_start_step;
@@ -164,6 +164,9 @@ class Simulation:
                 self.diag["step"].append(self.step)
                 self.diag["n_e"].append(n_e)
                 self.diag["n_i"].append(n_i)
+
+            if self.step % checkpoint_every == 0:
+                self._save_checkpoint()
 
             if time.time() - t_start > max_wall_seconds:
                 stopped_reason = "wall_time_budget"

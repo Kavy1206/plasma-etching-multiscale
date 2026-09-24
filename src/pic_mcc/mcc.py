@@ -245,11 +245,16 @@ class IonCollisions:
         v_target = self.rng.normal(0.0, v_th, size=(m, 3))
         v_rel = sp.v[idx] - v_target
         speed_rel = np.linalg.norm(v_rel, axis=1)
-        # Ion tables are indexed by CENTRE-OF-MASS energy; for equal masses,
-        # target-frame relative KE E_lab_rel = 0.5 mu_v_rel^2 with reduced
-        # mass mu = m/2, and E_cm = E_lab_rel / 2 (see cross_sections.lab_to_cm_energy
-        # docstring / theory.md sec 10). Combined: E_cm = m * speed_rel^2 / 8 / e.
-        E_cm = self.mass * speed_rel ** 2 / 8.0 / E
+        # Ion tables are indexed by CENTRE-OF-MASS energy: E_cm = (1/2) mu v_rel^2
+        # with reduced mass mu = m1 m2/(m1+m2). For equal ion/neutral masses,
+        # mu = m/2, so E_cm = m v_rel^2 / 4. (Cross-checked directly against the
+        # eduPIC code (Donko et al. 2021, PSST 30 095017), which computes the
+        # identical quantity for the same physical setup as
+        # energy = 0.5 * MU_ARAR * g_sqr -- i.e. (1/2) mu v_rel^2, confirming the
+        # factor. A first version of this line used m*v_rel^2/8, i.e. HALF the
+        # correct CM energy -- caught during argon cross-section sourcing, see
+        # PROGRESS.md, and the full Case 1 validation run was redone after the fix.)
+        E_cm = self.mass * speed_rel ** 2 / 4.0 / E
 
         sig = np.stack([p(E_cm) for p in self.processes], axis=1)
         sig_total = sig.sum(axis=1)

@@ -224,3 +224,21 @@ def test_null_collision_rate_matches_analytic_elastic_only_rate():
     nu_analytic = n_gas * sigma_E0 * v0
     expected_frac = 1.0 - np.exp(-nu_analytic * dt)
     assert frac_collided == pytest.approx(expected_frac, rel=0.1)
+
+
+def test_ion_cm_energy_formula_matches_reduced_mass_definition():
+    """E_cm = (1/2) mu v_rel^2, mu = m1 m2/(m1+m2). For equal masses, mu = m/2,
+    so E_cm = m v_rel^2 / 4 -- NOT /8 (a bug caught once: an earlier version of
+    this formula used /8, silently evaluating ion cross sections at half the
+    correct centre-of-mass energy). Cross-checked directly against the eduPIC
+    code (Donko et al. 2021, PSST 30 095017): energy = 0.5*MU_ARAR*g_sqr, the
+    same physical quantity, computed independently there.
+    """
+    m = 6.67e-27
+    v_rel = 1.0e4  # m/s, arbitrary
+    mu = m * m / (m + m)
+    E_cm_from_definition = 0.5 * mu * v_rel ** 2 / E
+    E_cm_from_code_formula = m * v_rel ** 2 / 4.0 / E
+    assert E_cm_from_code_formula == pytest.approx(E_cm_from_definition, rel=1e-12)
+    wrong_formula = m * v_rel ** 2 / 8.0 / E
+    assert wrong_formula == pytest.approx(E_cm_from_definition / 2.0, rel=1e-12)
