@@ -170,3 +170,37 @@ the formulas from the source (not vendored/copied) and independently
 re-implemented and tabulated them; see `data/cross_sections/ar/PROVENANCE.md`
 for the exact formulas and citations, and for what to verify before this goes
 on a resume (the same checklist discipline as the helium data).
+
+### Argon production sweep — done, with an explicit scope cut
+
+5 pressures (5/10/20/50/100 mTorr) at a single voltage (300 V), extracting
+the real, simulated IEDF at the grounded electrode. **Scope cut, stated
+explicitly per the session's ground rules:** 400 RF cycles and 64 cells x 128
+particles/cell, vs. Case 1's 1280 cycles and 128 cells x 512/cell -- chosen so
+the full 5-point sweep fits the session. Wall-clock per point: 190-500s.
+
+Physical result matches the mechanism derived in theory.md sec. 6: mean ion
+energy at the wall falls monotonically with pressure (112 -> 88.7 -> 64.7 ->
+38.8 -> 34.8 eV, 5->100 mTorr) as charge-exchange collisions thicken the
+low-energy population -- see `figures/ar_iedf_sweep.png`. This is genuine
+simulated argon data, not helium substituted or literature values.
+
+**Honest caveat on two of the five points.** The checkpoint bug above meant
+100 mTorr (split across 2 chunks during its averaging window) ended up with
+only **11** collected ion samples instead of the ~1000+ the other pressures
+got, and 20 mTorr lost roughly half its window's samples the same way (415
+collected). Both are kept and plotted with their true sample counts rather
+than quietly re-run to hide the gap -- the 100 mTorr histogram in particular
+should be read as indicative, not a converged IEDF. Given remaining session
+time, I did not re-run these two at full statistics; that would be the
+natural first thing to redo with any further session time. The density/kTe
+profile results for all 5 pressures are unaffected by this bug (those use a
+different, correctly-checkpointed accumulator).
+
+### Priority 0: closed out
+
+Moving to Priority 1 (Phase 2, LAMMPS) now. One update to the original
+plan worth flagging: this session's environment turned out to have a
+genuinely working LAMMPS install (pip package + libmpich12, both from
+allow-listed sources) and a working OVITO -- Phase 2 does not need the
+literature-yield-curve fallback the kickoff plan allowed for. Real MD it is.
