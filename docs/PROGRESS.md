@@ -104,3 +104,69 @@ As agreed in theory.md §9.5, before any comparison is run:
 - Profile: normalised RMS error over the gap, reported separately for bulk and
   sheath regions.
 - Target: a few percent at the mid-plane. 20% is a bug, not a tolerance.
+
+## Session 3 (final session) — Priority 0: Case 1 validated
+
+### Result
+
+**Mid-plane ion density: 1.40e14 m^-3 vs Turner's 1.40e14 m^-3 -- 1.2% error.**
+Mid-plane kTe: 9.01 eV vs 9.36 eV -- 3.8% error. Full-domain profile RMS error
+(normalised to peak density): 0.65%. See `figures/case1_validation.png`.
+
+This is a real, independently-run 512,000-step (1280 RF cycle) helium CCP
+simulation, gamma=0, compared point-by-point against the digitized Turner et
+al. (2013) Case 1 reference profile in `data/benchmark/`. It beats the "a few
+percent at mid-plane" target set in theory.md sec. 9.5.
+
+### A real bug, found and fixed mid-session
+
+The first full Case 1 run finished at **14.3% error on mid-plane n_i, 9.6% on
+kTe** -- clearly outside the target, and I said so rather than reporting it as
+a pass. While sourcing argon cross sections (see below) I found and read the
+eduPIC reference code (Donko et al. 2021, PSST 30 095017), which computes the
+ion-neutral centre-of-mass collision energy as `0.5 * MU_ARAR * g_sqr` --
+reduced mass times relative speed squared. My own `IonCollisions` code was
+computing `mass * speed_rel**2 / 8.0`, i.e. **half** the correct value
+(should be `/4.0`, since for equal masses mu = m/2 and E_cm = mu*v_rel^2/2 =
+m*v_rel^2/4). This meant every ion-neutral collision all session was evaluating
+the Isotropic_He/Backscattering_He cross sections at half the correct
+energy, biasing both the total ion collision rate and the elastic/
+charge-exchange branching ratio.
+
+Fixed in one line, pinned with a regression test
+(`test_ion_cm_energy_formula_matches_reduced_mass_definition`) that checks the
+formula against the reduced-mass definition directly and independently
+confirms the old formula was off by exactly 2x. **Re-ran the full 512,000-step
+Case 1 validation from scratch after the fix** -- did not keep or report the
+pre-fix number as the result. The improvement (14.3% -> 1.2% on the primary
+metric) is consistent with this having been the dominant error source.
+
+Diagnostic path that found nothing wrong (recorded because it narrowed things
+down before the real bug turned up): checkpoint/resume verified bit-exact;
+particle population converges to a stable ~12,000-19,000 range by ~300 RF
+cycles and stays flat through the end of the run (not a convergence issue);
+quasineutrality holds to <5% only within roughly the central 15% of the gap --
+initially looked alarming, but the reference profile shows the identical
+broad, non-flat-top shape (Case 1 is a genuinely sheath-dominated discharge,
+consistent with the ~27%-of-gap sheath-width estimate in theory.md sec. 3d),
+so this is real physics, not a bug.
+
+### Argon cross sections -- sourced, with a citable, well-documented origin
+
+LXCat itself was unreachable from this environment both sessions (needs a
+free account; the domain isn't in this environment's network allow-list).
+Instead of leaving this blocked, I found and used **eduPIC**
+(github.com/donkozoltan/eduPIC), the open-source code accompanying Donko,
+Derzsi, Vass, Horvath, Gibson, Firth & Hartmann, "eduPIC: an educational
+particle-in-cell/Monte Carlo collision code for the study of a low-pressure
+capacitively coupled radiofrequency discharge," Plasma Sources Sci. Technol.
+30, 095017 (2021), doi:10.1088/1361-6595/ac0b48 -- a peer-reviewed,
+purpose-built argon CCP reference implementation, not a random script. Its
+electron-argon cross sections are the analytic Phelps & Petrovic (1999)
+formulas; its ion-argon cross sections are the analytic Phelps (1994) qiso/qmom
+formulas -- the same class of source (an established Phelps-family
+compilation) as the helium data, just analytic rather than tabulated. I read
+the formulas from the source (not vendored/copied) and independently
+re-implemented and tabulated them; see `data/cross_sections/ar/PROVENANCE.md`
+for the exact formulas and citations, and for what to verify before this goes
+on a resume (the same checklist discipline as the helium data).
