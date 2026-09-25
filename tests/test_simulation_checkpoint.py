@@ -46,3 +46,30 @@ def test_checkpoint_resume_matches_uninterrupted_run_bitwise(tmp_path):
     assert np.array_equal(kte1, kte2)
     assert np.array_equal(sim1.electrons.x, sim3.electrons.x)
     assert np.array_equal(sim1.ions.v, sim3.ions.v)
+
+
+def test_checkpoint_preserves_iedf_samples_across_resume(tmp_path):
+    """Regression test for a real bug: IEDF/IADF sample lists were not
+    included in the checkpoint, so a run interrupted mid-averaging-window
+    silently lost every sample collected before the interruption. Found
+    while running the argon production sweep (100 mTorr lost all but the
+    last 119 steps' worth of samples this way)."""
+    cfg = _make_cfg()
+    cfg.gamma_see = 0.0  # helium guard requires this; iedf collection doesn't need SEE
+
+    sim_full = Simulation(cfg, str(tmp_path / "full.npz"), collect_iedf=True)
+    sim_full.run(max_wall_seconds=120)
+    e_full, a_full = sim_full.iedf_iadf(1)
+
+    ckpt = tmp_path / "chunked.npz"
+    sim_a = Simulation(cfg, str(ckpt), collect_iedf=True)
+    stop_mid_average = sim_full.avg_start_step + sim_full.avg.count // 3
+    sim_a.run(max_wall_seconds=120, stop_at_step=stop_mid_average)
+    sim_b = Simulation(cfg, str(ckpt), collect_iedf=True)  # resume
+    sim_b.run(max_wall_seconds=120)
+    e_chunked, a_chunked = sim_b.iedf_iadf(1)
+
+    assert e_full.size > 0, "test setup collected no samples at all"
+    assert e_chunked.size == e_full.size, (
+        f"resume lost samples: {e_chunked.size} vs {e_full.size} uninterrupted")
+    assert np.array_equal(np.sort(e_full), np.sort(e_chunked))

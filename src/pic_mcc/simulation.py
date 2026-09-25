@@ -45,6 +45,8 @@ class Averages:
     sum_ni: np.ndarray = None
     sum_ne_v2: np.ndarray = None  # for kTe: m<v^2>/3 via grid-binned second moment
     count: int = 0
+    iedf_energy: list = field(default_factory=lambda: {0: [], 1: []})  # per wall
+    iedf_angle: list = field(default_factory=lambda: {0: [], 1: []})   # deg from normal
 
     def __post_init__(self):
         if self.sum_ne is None:
@@ -54,7 +56,8 @@ class Averages:
 
 
 class Simulation:
-    def __init__(self, cfg: Config, checkpoint_path: str):
+    def __init__(self, cfg: Config, checkpoint_path: str, collect_iedf: bool = False):
+        self.collect_iedf = collect_iedf
         self.cfg = cfg
         self.ckpt_path = Path(checkpoint_path)
         self.grid = Grid1D(cfg.length, cfg.n_cells)
@@ -132,6 +135,16 @@ class Simulation:
 
             wall_e, xe_abs, ve_abs = apply_absorbing_walls(self.electrons, cfg.length)
             wall_i, xi_abs, vi_abs = apply_absorbing_walls(self.ions, cfg.length)
+            if self.step >= self.avg_start_step and wall_i.size and self.collect_iedf:
+                E_ion = kinetic_energy_ev(vi_abs, cfg.m_ion)
+                v_normal = np.abs(vi_abs[:, 0])
+                v_perp = np.sqrt(vi_abs[:, 1] ** 2 + vi_abs[:, 2] ** 2)
+                angle_deg = np.degrees(np.arctan2(v_perp, np.maximum(v_normal, 1e-30)))
+                for w in (0, 1):
+                    sel = wall_i == w
+                    if np.any(sel):
+                        self.avg.iedf_energy[w].append(E_ion[sel])
+                        self.avg.iedf_angle[w].append(angle_deg[sel])
             if cfg.gamma_see > 0.0 and wall_i.size:
                 x_new, v_new = emit_secondaries(wall_i, cfg.gamma_see, cfg.T_see,
                                                 cfg.m_electron, cfg.length, self.rng)
@@ -179,17 +192,20 @@ class Simulation:
                    steps_this_call=None)
 
     def _save_checkpoint(self):
+        iedf_e0 = np.concatenate(self.avg.iedf_energy[0]) if self.avg.iedf_energy[0] else np.zeros(0)
+        iedf_e1 = np.concatenate(self.avg.iedf_energy[1]) if self.avg.iedf_energy[1] else np.zeros(0)
+        iedf_a0 = np.concatenate(self.avg.iedf_angle[0]) if self.avg.iedf_angle[0] else np.zeros(0)
+        iedf_a1 = np.concatenate(self.avg.iedf_angle[1]) if self.avg.iedf_angle[1] else np.zeros(0)
         np.savez(self.ckpt_path,
                 xe=self.electrons.x, ve=self.electrons.v,
                 xi=self.ions.x, vi=self.ions.v,
                 step=self.step, weight=self.weight,
                 sum_ne=self.avg.sum_ne, sum_ni=self.avg.sum_ni,
                 sum_ne_v2=self.avg.sum_ne_v2, count=self.avg.count,
+                iedf_e0=iedf_e0, iedf_e1=iedf_e1, iedf_a0=iedf_a0, iedf_a1=iedf_a1,
                 rng_state=np.void(bytes(str(self.rng.bit_generator.state), "utf-8")),
                 diag_step=np.array(self.diag["step"]), diag_ne=np.array(self.diag["n_e"]),
                 diag_ni=np.array(self.diag["n_i"]))
-        # RNG state via pickle for exact resume (np.void trick above is not
-        # reliably round-trippable across numpy versions, so also pickle).
         import pickle
         with open(str(self.ckpt_path) + ".rng.pkl", "wb") as f:
             pickle.dump(self.rng.bit_generator.state, f)
@@ -205,6 +221,12 @@ class Simulation:
         self.avg.sum_ni = d["sum_ni"]
         self.avg.sum_ne_v2 = d["sum_ne_v2"]
         self.avg.count = int(d["count"])
+        # Restore as single-element lists so future appends accumulate correctly
+        # and iedf_iadf()'s concatenate keeps working either way.
+        for w, key_e, key_a in ((0, "iedf_e0", "iedf_a0"), (1, "iedf_e1", "iedf_a1")):
+            if key_e in d and d[key_e].size:
+                self.avg.iedf_energy[w] = [d[key_e]]
+                self.avg.iedf_angle[w] = [d[key_a]]
         self.diag = {"step": list(d["diag_step"]), "n_e": list(d["diag_ne"]), "n_i": list(d["diag_ni"])}
         import pickle
         with open(str(self.ckpt_path) + ".rng.pkl", "rb") as f:
@@ -219,3 +241,10 @@ class Simulation:
         mean_v2 = self.avg.sum_ne_v2 / np.maximum(self.avg.sum_ne, 1e-30)
         kTe_ev = (self.cfg.m_electron * mean_v2 / 3.0) / E
         return self.grid.x, n_e, n_i, kTe_ev
+
+    def iedf_iadf(self, wall: int):
+        e = self.avg.iedf_energy[wall]
+        a = self.avg.iedf_angle[wall]
+        if not e:
+            return np.zeros(0), np.zeros(0)
+        return np.concatenate(e), np.concatenate(a)
