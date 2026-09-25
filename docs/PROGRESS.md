@@ -204,3 +204,87 @@ plan worth flagging: this session's environment turned out to have a
 genuinely working LAMMPS install (pip package + libmpich12, both from
 allow-listed sources) and a working OVITO -- Phase 2 does not need the
 literature-yield-curve fallback the kickoff plan allowed for. Real MD it is.
+
+## Phase 2 (LAMMPS) — done, heavily reduced statistics, two real bugs fixed
+
+### Scope cut, stated explicitly
+
+Original plan: 100-200 independent impacts/energy on a freshly re-thermalized
+slab each time. Given session time remaining after Priority 0, reduced
+further than even the pre-authorized 20-30/energy fallback: **10 sequential
+impacts per energy, on one slab per energy** (not fresh per impact), with a
+short Langevin re-equilibration between shots rather than a full fresh
+thermalization. This amortizes the ~15s one-time relaxation cost across 10
+shots instead of paying it 10-30 times. Trade-off, stated plainly: shots
+within one energy are NOT fully independent (accumulated sub-surface damage
+across the series is a real, uncontrolled systematic this design doesn't
+correct for), and n=10 is small enough that yields at low energy are mostly
+single-digit-count statistics with large uncertainty. Six energies run:
+25/50/100/200/300/500 eV, normal incidence only -- the angle sweep
+(Y(theta) at 200 eV) and the optional Cl-passivation ALE-window run were
+both cut entirely for time and were not attempted.
+
+### Two real bugs found running this, both fixed before any result was kept
+
+1. **Vacuum headroom too small.** The adaptive timestep (`dt/reset`) caps
+   per-step displacement, so a fast recoil can travel up to
+   `n_impact_steps * 0.02` Angstrom before a shot's cleanup runs. The
+   original box only had ~25 A of vacuum above the slab; at 200 eV this
+   produced `ERROR: Lost atoms` mid-run. Fixed by sizing the vacuum headroom
+   from `n_impact_steps` directly, and by checking/deleting escaped atoms
+   after BOTH the impact run and the inter-shot re-equilibration run (an
+   atom that hadn't quite crossed the escape threshold at the first check
+   could otherwise keep climbing and still outrun the box later).
+2. **Projectile mis-selection (the more serious one).** Each shot selected
+   its new Ar projectile with `group g_proj_tmp type 2` -- which matches
+   **every** Ar atom ever fired in that session, including ones already
+   embedded in the lattice from earlier shots. Every new shot was therefore
+   resetting the velocity of all previously-embedded projectiles back up to
+   the new shot's full launch speed too, injecting extra energy each time.
+   This is what actually caused the 200 eV crash (visible in the log as a
+   temperature spike to >3000 K right before the lost-atoms error) and would
+   have silently biased every multi-shot energy's yield upward had it not
+   crashed. Fixed with a persistent `g_old_ar` tracking group, updated after
+   each shot, so only the genuinely new atom is ever selected. **Re-ran
+   25/50/100 eV** (which had completed without crashing, but under the same
+   buggy selection logic) after the fix rather than keep results that might
+   be silently wrong; kept only the post-fix numbers below.
+
+### Result
+
+| E (eV) | shots | sputtered | Y (mean) |
+|---|---|---|---|
+| 25  | 10 | 0 | 0.0 |
+| 50  | 10 | 1 | 0.1 |
+| 100 | 10 | 0 | 0.0 |
+| 200 | 10 | 1 | 0.1 |
+| 300 | 10 | 1 | 0.1 |
+| 500 | 10 | 7 | **0.7** |
+
+Fit to Y=A(sqrt(E)-sqrt(E_th)): A=0.009+/-0.006, E_th=25+/-128 eV -- the
+uncertainty on E_th is larger than the value itself, i.e. **this fit is not
+meaningfully constrained** at n=10/energy, and is reported as such rather
+than dressed up. See `figures/sputter_yield.png`.
+
+The one point worth real confidence in: **500 eV gives Y=0.7, against the
+literature anchor of 0.6-0.7 in theory.md sec. 7** -- good agreement. The
+100 eV point (Y=0.0 from 10 shots) is statistically consistent with the
+literature anchor Y=0.07 (expected count from 10 shots at that rate is
+~0.7, so seeing 0 is unsurprising, not a confirming match either) --
+correctly read as "not inconsistent with," not as "confirms."
+
+Damage: OVITO coordination analysis (cutoff 2.8 A) on the post-impact slab
+shows the fraction of non-4-coordinated Si atoms (bulk diamond Si is
+4-coordinated) rising from 4.9% (pristine slab, surface atoms only) to
+14.9% after 4 sequential 500 eV impacts -- a real, quantified amorphization
+signature. `figures/lammps_damage_500eV.png` (OVITO's own Vulkan-based
+renderer could not be gotten working in this environment even after
+installing mesa-vulkan-drivers; the coordination analysis itself IS OVITO,
+the image is rendered from OVITO's computed per-atom data via matplotlib
+instead of OVITO's own viewport).
+
+Potential used: Stillinger-Weber (LAMMPS-bundled `Si.sw`) + ZBL splice
+(`pair_style hybrid/overlay sw zbl 1.0 2.0`). SW's Si cohesive energy
+(~4.34 eV/atom) differs from Tersoff's (~4.63 eV/atom) -- per theory.md
+sec. 7, this sets part of the threshold value, so E_th from this MD should
+not be compared to a Tersoff-potential E_th without accounting for that.

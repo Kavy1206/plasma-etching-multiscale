@@ -1,0 +1,19 @@
+{
+  "energy_ev": 25.0,
+  "sputtered_per_shot": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "total": 0,
+  "n_shots": 10,
+  "yield_mean": 0.0,
+  "elapsed_s": 90.5
+}

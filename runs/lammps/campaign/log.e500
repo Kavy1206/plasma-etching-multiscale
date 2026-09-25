@@ -1,0 +1,993 @@
+LAMMPS (22 Jul 2025 - Update 4)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread.
+  using 1 OpenMP thread(s) per MPI task
+units metal
+dimension 3
+boundary p p f
+atom_style atomic
+lattice diamond 5.431
+Lattice spacing in x,y,z = 5.431 5.431 5.431
+region box block 0 8 0 8 0 20 units lattice
+create_box 2 box
+Created orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  1 by 1 by 1 MPI processor grid
+region r_slab block 0 8 0 8 0 10 units lattice
+create_atoms 1 region r_slab
+Created 5248 atoms
+  using lattice units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.001 seconds
+mass 1 28.0855
+mass 2 39.948
+pair_style hybrid/overlay sw zbl 1.0 2.0
+pair_coeff * * sw Si.sw Si Si
+Reading sw potential file Si.sw with DATE: 2007-06-11
+pair_coeff 1 1 zbl 14.0 14.0
+pair_coeff 1 2 zbl 14.0 18.0
+pair_coeff 2 2 zbl 18.0 18.0
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+region r_frozen block INF INF INF INF INF 4.0 units box
+region r_thermo block INF INF INF INF 4.0 10.0 units box
+group g_frozen region r_frozen
+384 atoms in group g_frozen
+group g_thermo region r_thermo
+640 atoms in group g_thermo
+group g_mobile subtract all g_frozen
+4864 atoms in group g_mobile
+velocity g_mobile create 300.0 106 mom yes rot yes dist gaussian
+fix fzero g_frozen setforce 0.0 0.0 0.0
+fix ftherm g_thermo langevin 300.0 300.0 0.1 106
+fix fnve g_mobile nve
+timestep 0.001
+thermo 500
+thermo_style custom step dt temp pe ke
+run 2000
+Neighbor list info ...
+  update: every = 1 steps, delay = 0 steps, check = yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 5.77118
+  ghost atom cutoff = 5.77118
+  binsize = 2.88559, bins = 16 16 38
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair sw, perpetual
+      attributes: full, newton on, cut 5.77118
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) pair zbl, perpetual, half/full from (1)
+      attributes: half, newton on
+      pair build: halffull/newton
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+         0   0.001          278.0446      -22203.392      188.57763    
+       500   0.001          199.61896     -22116.717      135.38717    
+      1000   0.001          219.03961     -22116.512      148.55879    
+      1500   0.001          224.65638     -22118.054      152.36824    
+      2000   0.001          222.98561     -22117.681      151.23508    
+Loop time of 9.09404 on 1 procs for 2000 steps with 5248 atoms
+
+Performance: 19.001 ns/day, 1.263 hours/ns, 219.924 timesteps/s, 1.154 Matom-step/s
+99.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 8.8195     | 8.8195     | 8.8195     |   0.0 | 96.98
+Neigh   | 0.072798   | 0.072798   | 0.072798   |   0.0 |  0.80
+Comm    | 0.030207   | 0.030207   | 0.030207   |   0.0 |  0.33
+Output  | 0.00016968 | 0.00016968 | 0.00016968 |   0.0 |  0.00
+Modify  | 0.14149    | 0.14149    | 0.14149    |   0.0 |  1.56
+Other   |            | 0.02992    |            |       |  0.33
+
+Nlocal:           5248 ave        5248 max        5248 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3366 ave        3366 max        3366 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          86683 ave       86683 max       86683 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       173366 ave      173366 max      173366 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 173366
+Ave neighs/atom = 33.03468
+Neighbor list builds = 10
+Dangerous builds = 0
+fix fdt all dt/reset 1 0.0001 0.002 0.02 units box
+region r_escape block INF INF INF INF 69.31 INF units box
+group g_old_ar type 2
+0 atoms in group g_old_ar
+create_atoms 2 single 27.216272100459516 32.18039277807721 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+1 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      2000   0.0001         960.01783     -22117.681      651.23505    
+      2500   0.0001         815.87292     -22020.445      553.45331    
+      3000   0.00021520011  515.58496     -21817.76       349.75079    
+      3200   0.00021834333  471.17556     -21787.938      319.62535    
+Loop time of 6.39747 on 1 procs for 1200 steps with 5249 atoms
+
+Performance: 3.539 ns/day, 6.782 hours/ns, 187.574 timesteps/s, 984.577 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 5.825      | 5.825      | 5.825      |   0.0 | 91.05
+Neigh   | 0.24141    | 0.24141    | 0.24141    |   0.0 |  3.77
+Comm    | 0.020137   | 0.020137   | 0.020137   |   0.0 |  0.31
+Output  | 0.00014265 | 0.00014265 | 0.00014265 |   0.0 |  0.00
+Modify  | 0.29266    | 0.29266    | 0.29266    |   0.0 |  4.57
+Other   |            | 0.01814    |            |       |  0.28
+
+Nlocal:           5249 ave        5249 max        5249 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3375 ave        3375 max        3375 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          88084 ave       88084 max       88084 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       176168 ave      176168 max      176168 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 176168
+Ave neighs/atom = 33.562202
+Neighbor list builds = 33
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+0 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      3200   0.00021834333  471.17556     -21787.938      319.62535    
+      3500   0.00024340198  474.80792     -21791.572      322.08939    
+Loop time of 1.8413 on 1 procs for 300 steps with 5249 atoms
+
+Performance: 3.426 ns/day, 7.004 hours/ns, 162.928 timesteps/s, 855.211 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.7217     | 1.7217     | 1.7217     |   0.0 | 93.50
+Neigh   | 0.038607   | 0.038607   | 0.038607   |   0.0 |  2.10
+Comm    | 0.0046926  | 0.0046926  | 0.0046926  |   0.0 |  0.25
+Output  | 3.9369e-05 | 3.9369e-05 | 3.9369e-05 |   0.0 |  0.00
+Modify  | 0.071774   | 0.071774   | 0.071774   |   0.0 |  3.90
+Other   |            | 0.004511   |            |       |  0.24
+
+Nlocal:           5249 ave        5249 max        5249 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3374 ave        3374 max        3374 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          88425 ave       88425 max       88425 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       176850 ave      176850 max      176850 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 176850
+Ave neighs/atom = 33.692132
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+1 atoms in group g_old_ar
+create_atoms 2 single 9.126608926571256 33.24805796206555 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+2 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      3500   0.0001         1211.6518     -21791.572      822.08936    
+      4000   0.0001         1024.7793     -21665.705      695.2989     
+      4500   0.00019420922  835.7091      -21538.649      567.01734    
+      4700   0.00020577028  792.9873      -21508.727      538.03118    
+Loop time of 7.9501 on 1 procs for 1200 steps with 5250 atoms
+
+Performance: 2.684 ns/day, 8.943 hours/ns, 150.942 timesteps/s, 792.443 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 7.3623     | 7.3623     | 7.3623     |   0.0 | 92.61
+Neigh   | 0.25334    | 0.25334    | 0.25334    |   0.0 |  3.19
+Comm    | 0.020376   | 0.020376   | 0.020376   |   0.0 |  0.26
+Output  | 0.00011924 | 0.00011924 | 0.00011924 |   0.0 |  0.00
+Modify  | 0.29576    | 0.29576    | 0.29576    |   0.0 |  3.72
+Other   |            | 0.01818    |            |       |  0.23
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3381 ave        3381 max        3381 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          89198 ave       89198 max       89198 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       178396 ave      178396 max      178396 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 178396
+Ave neighs/atom = 33.98019
+Neighbor list builds = 32
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+0 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      4700   0.00020577028  792.9873      -21508.727      538.03118    
+      5000   0.00020989638  780.42402     -21499.331      529.50716    
+Loop time of 2.09724 on 1 procs for 300 steps with 5250 atoms
+
+Performance: 2.594 ns/day, 9.252 hours/ns, 143.045 timesteps/s, 750.988 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.9736     | 1.9736     | 1.9736     |   0.0 | 94.10
+Neigh   | 0.041065   | 0.041065   | 0.041065   |   0.0 |  1.96
+Comm    | 0.004952   | 0.004952   | 0.004952   |   0.0 |  0.24
+Output  | 3.9453e-05 | 3.9453e-05 | 3.9453e-05 |   0.0 |  0.00
+Modify  | 0.072948   | 0.072948   | 0.072948   |   0.0 |  3.48
+Other   |            | 0.004638   |            |       |  0.22
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3366 ave        3366 max        3366 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          89161 ave       89161 max       89161 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       178322 ave      178322 max      178322 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 178322
+Ave neighs/atom = 33.966095
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+2 atoms in group g_old_ar
+create_atoms 2 single 30.092175463177412 10.167308770716971 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+3 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      5000   0.0001         1517.0693     -21499.331      1029.5071    
+      5500   0.00010028353  1299.3298     -21355.436      881.74567    
+      6000   0.00020989638  1088.5745     -21215.134      738.72383    
+      6200   0.00020989638  1059.7595     -21197.058      719.16952    
+Loop time of 8.79661 on 1 procs for 1200 steps with 5251 atoms
+
+Performance: 2.474 ns/day, 9.701 hours/ns, 136.416 timesteps/s, 716.322 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 8.196      | 8.196      | 8.196      |   0.0 | 93.17
+Neigh   | 0.2629     | 0.2629     | 0.2629     |   0.0 |  2.99
+Comm    | 0.020454   | 0.020454   | 0.020454   |   0.0 |  0.23
+Output  | 0.00012012 | 0.00012012 | 0.00012012 |   0.0 |  0.00
+Modify  | 0.2986     | 0.2986     | 0.2986     |   0.0 |  3.39
+Other   |            | 0.01854    |            |       |  0.21
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3355 ave        3355 max        3355 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90019 ave       90019 max       90019 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180038 ave      180038 max      180038 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180038
+Ave neighs/atom = 34.286422
+Neighbor list builds = 32
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+1 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+delete_atoms group g_gone
+Deleted 1 atoms, new total = 5250
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      6200   0.00020989638  1055.1105     -21197.058      715.87821    
+      6500   0.00020989638  1017.5164     -21177.214      690.37114    
+Loop time of 2.26602 on 1 procs for 300 steps with 5250 atoms
+
+Performance: 2.401 ns/day, 9.996 hours/ns, 132.391 timesteps/s, 695.052 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.1423     | 2.1423     | 2.1423     |   0.0 | 94.54
+Neigh   | 0.041571   | 0.041571   | 0.041571   |   0.0 |  1.83
+Comm    | 0.0048287  | 0.0048287  | 0.0048287  |   0.0 |  0.21
+Output  | 4.7612e-05 | 4.7612e-05 | 4.7612e-05 |   0.0 |  0.00
+Modify  | 0.072548   | 0.072548   | 0.072548   |   0.0 |  3.20
+Other   |            | 0.004689   |            |       |  0.21
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3342 ave        3342 max        3342 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90007 ave       90007 max       90007 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180014 ave      180014 max      180014 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180014
+Ave neighs/atom = 34.288381
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+3 atoms in group g_old_ar
+create_atoms 2 single 29.70959192180861 29.661850522095722 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+4 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      6500   0.0001         1754.1165     -21177.214      1190.3711    
+      7000   0.0001         1698.5017     -21142.641      1152.63      
+      7500   0.00014854911  1564.0707     -21058.018      1061.403     
+      7700   0.00017268554  1436.0213     -20976.704      974.50671    
+Loop time of 9.32668 on 1 procs for 1200 steps with 5251 atoms
+
+Performance: 1.920 ns/day, 12.502 hours/ns, 128.663 timesteps/s, 675.610 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 8.691      | 8.691      | 8.691      |   0.0 | 93.18
+Neigh   | 0.29757    | 0.29757    | 0.29757    |   0.0 |  3.19
+Comm    | 0.020479   | 0.020479   | 0.020479   |   0.0 |  0.22
+Output  | 0.00012078 | 0.00012078 | 0.00012078 |   0.0 |  0.00
+Modify  | 0.29884    | 0.29884    | 0.29884    |   0.0 |  3.20
+Other   |            | 0.01863    |            |       |  0.20
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3350 ave        3350 max        3350 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90480 ave       90480 max       90480 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180960 ave      180960 max      180960 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180960
+Ave neighs/atom = 34.462007
+Neighbor list builds = 35
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+1 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+delete_atoms group g_gone
+Deleted 1 atoms, new total = 5250
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      7700   0.00017268554  1416.8189     -20976.704      961.29251    
+      8000   0.00017268554  1335.3312     -20927.836      906.00416    
+Loop time of 2.39769 on 1 procs for 300 steps with 5250 atoms
+
+Performance: 1.867 ns/day, 12.856 hours/ns, 125.121 timesteps/s, 656.884 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.2733     | 2.2733     | 2.2733     |   0.0 | 94.81
+Neigh   | 0.042232   | 0.042232   | 0.042232   |   0.0 |  1.76
+Comm    | 0.0048745  | 0.0048745  | 0.0048745  |   0.0 |  0.20
+Output  | 4.001e-05  | 4.001e-05  | 4.001e-05  |   0.0 |  0.00
+Modify  | 0.07273    | 0.07273    | 0.07273    |   0.0 |  3.03
+Other   |            | 0.004553   |            |       |  0.19
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3355 ave        3355 max        3355 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90883 ave       90883 max       90883 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       181766 ave      181766 max      181766 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 181766
+Ave neighs/atom = 34.622095
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+4 atoms in group g_old_ar
+create_atoms 2 single 13.58292260607105 34.01103872723962 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+5 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      8000   0.0001         2071.8707     -20927.836      1406.0041    
+      8500   0.0001         1868.3491     -20795.921      1267.8912    
+      9000   0.00017268554  1728.9528     -20710.105      1173.2947    
+      9200   0.00017268554  1659.949      -20667.495      1126.4676    
+Loop time of 9.97947 on 1 procs for 1200 steps with 5251 atoms
+
+Performance: 1.794 ns/day, 13.377 hours/ns, 120.247 timesteps/s, 631.417 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.3237     | 9.3237     | 9.3237     |   0.0 | 93.43
+Neigh   | 0.31706    | 0.31706    | 0.31706    |   0.0 |  3.18
+Comm    | 0.020953   | 0.020953   | 0.020953   |   0.0 |  0.21
+Output  | 0.00013665 | 0.00013665 | 0.00013665 |   0.0 |  0.00
+Modify  | 0.29913    | 0.29913    | 0.29913    |   0.0 |  3.00
+Other   |            | 0.01846    |            |       |  0.19
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3333 ave        3333 max        3333 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          91336 ave       91336 max       91336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       182672 ave      182672 max      182672 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 182672
+Ave neighs/atom = 34.78804
+Neighbor list builds = 37
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+2 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+delete_atoms group g_gone
+Deleted 2 atoms, new total = 5249
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      9200   0.00034988003  1603.123      -20667.495      1087.4901    
+      9500   0.00040762891  1443.9134     -20580.64       979.48914    
+Loop time of 2.52694 on 1 procs for 300 steps with 5249 atoms
+
+Performance: 4.181 ns/day, 5.740 hours/ns, 118.721 timesteps/s, 623.165 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.4003     | 2.4003     | 2.4003     |   0.0 | 94.99
+Neigh   | 0.044083   | 0.044083   | 0.044083   |   0.0 |  1.74
+Comm    | 0.0047264  | 0.0047264  | 0.0047264  |   0.0 |  0.19
+Output  | 4.1535e-05 | 4.1535e-05 | 4.1535e-05 |   0.0 |  0.00
+Modify  | 0.073238   | 0.073238   | 0.073238   |   0.0 |  2.90
+Other   |            | 0.004543   |            |       |  0.18
+
+Nlocal:           5249 ave        5249 max        5249 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3321 ave        3321 max        3321 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          91355 ave       91355 max       91355 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       182710 ave      182710 max      182710 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 182710
+Ave neighs/atom = 34.808535
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+5 atoms in group g_old_ar
+create_atoms 2 single 18.176946319010845 20.44372439913286 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+6 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+      9500   0.0001         2180.5727     -20580.64       1479.4891    
+     10000   0.0001         2099.1107     -20536.217      1424.2182    
+     10500   0.00017671634  1905.5119     -20415.902      1292.8641    
+     10700   0.00031311928  1828.2619     -20374.015      1240.451     
+Loop time of 10.0411 on 1 procs for 1200 steps with 5250 atoms
+
+Performance: 3.233 ns/day, 7.423 hours/ns, 119.508 timesteps/s, 627.419 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.4071     | 9.4071     | 9.4071     |   0.0 | 93.69
+Neigh   | 0.29614    | 0.29614    | 0.29614    |   0.0 |  2.95
+Comm    | 0.020165   | 0.020165   | 0.020165   |   0.0 |  0.20
+Output  | 0.00011997 | 0.00011997 | 0.00011997 |   0.0 |  0.00
+Modify  | 0.29944    | 0.29944    | 0.29944    |   0.0 |  2.98
+Other   |            | 0.01823    |            |       |  0.18
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3359 ave        3359 max        3359 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90762 ave       90762 max       90762 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       181524 ave      181524 max      181524 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 181524
+Ave neighs/atom = 34.576
+Neighbor list builds = 34
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+0 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     10700   0.00031311928  1828.2619     -20374.015      1240.451     
+     11000   0.00033790385  1719.5594     -20323.749      1166.6979    
+Loop time of 2.53553 on 1 procs for 300 steps with 5250 atoms
+
+Performance: 3.454 ns/day, 6.948 hours/ns, 118.318 timesteps/s, 621.171 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.4069     | 2.4069     | 2.4069     |   0.0 | 94.93
+Neigh   | 0.044693   | 0.044693   | 0.044693   |   0.0 |  1.76
+Comm    | 0.0049481  | 0.0049481  | 0.0049481  |   0.0 |  0.20
+Output  | 4.0527e-05 | 4.0527e-05 | 4.0527e-05 |   0.0 |  0.00
+Modify  | 0.074356   | 0.074356   | 0.074356   |   0.0 |  2.93
+Other   |            | 0.004548   |            |       |  0.18
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3382 ave        3382 max        3382 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90490 ave       90490 max       90490 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180980 ave      180980 max      180980 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180980
+Ave neighs/atom = 34.472381
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+6 atoms in group g_old_ar
+create_atoms 2 single 25.73233119578237 26.682364685821256 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+7 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     11000   0.0001         2456.0258     -20323.749      1666.6978    
+     11500   0.0001         2324.1122     -20244.384      1577.1792    
+     12000   0.00012551626  2289.4789     -20231.119      1553.6765    
+     12200   0.00018171854  2151.9182     -20142.67       1460.3256    
+Loop time of 9.99077 on 1 procs for 1200 steps with 5251 atoms
+
+Performance: 1.886 ns/day, 12.727 hours/ns, 120.111 timesteps/s, 630.702 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.3206     | 9.3206     | 9.3206     |   0.0 | 93.29
+Neigh   | 0.33116    | 0.33116    | 0.33116    |   0.0 |  3.31
+Comm    | 0.021039   | 0.021039   | 0.021039   |   0.0 |  0.21
+Output  | 0.00012303 | 0.00012303 | 0.00012303 |   0.0 |  0.00
+Modify  | 0.29963    | 0.29963    | 0.29963    |   0.0 |  3.00
+Other   |            | 0.01818    |            |       |  0.18
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3374 ave        3374 max        3374 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90595 ave       90595 max       90595 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       181190 ave      181190 max      181190 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 181190
+Ave neighs/atom = 34.505808
+Neighbor list builds = 38
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+0 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.315 | 4.315 | 4.315 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     12200   0.00018171854  2151.9182     -20142.67       1460.3256    
+     12500   0.00018684231  2097.0595     -20115.641      1423.0976    
+Loop time of 2.49496 on 1 procs for 300 steps with 5251 atoms
+
+Performance: 1.941 ns/day, 12.364 hours/ns, 120.242 timesteps/s, 631.393 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.3859     | 2.3859     | 2.3859     |   0.0 | 95.63
+Neigh   | 0.026217   | 0.026217   | 0.026217   |   0.0 |  1.05
+Comm    | 0.0047137  | 0.0047137  | 0.0047137  |   0.0 |  0.19
+Output  | 4.0376e-05 | 4.0376e-05 | 4.0376e-05 |   0.0 |  0.00
+Modify  | 0.073556   | 0.073556   | 0.073556   |   0.0 |  2.95
+Other   |            | 0.004555   |            |       |  0.18
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3402 ave        3402 max        3402 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90730 ave       90730 max       90730 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       181460 ave      181460 max      181460 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 181460
+Ave neighs/atom = 34.557227
+Neighbor list builds = 3
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+7 atoms in group g_old_ar
+create_atoms 2 single 28.150922475387713 15.94003804602274 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+8 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.316 | 4.316 | 4.316 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     12500   0.0001         2833.3137     -20115.641      1923.0976    
+     13000   0.0001         2729.6885     -20053.98       1852.7625    
+     13500   0.0001300139   2560.1436     -19951.591      1737.6847    
+     13700   0.00013442406  2496.6772     -19912.984      1694.6072    
+Loop time of 10.3733 on 1 procs for 1200 steps with 5252 atoms
+
+Performance: 1.344 ns/day, 17.863 hours/ns, 115.682 timesteps/s, 607.560 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.7197     | 9.7197     | 9.7197     |   0.0 | 93.70
+Neigh   | 0.3128     | 0.3128     | 0.3128     |   0.0 |  3.02
+Comm    | 0.021144   | 0.021144   | 0.021144   |   0.0 |  0.20
+Output  | 0.00012035 | 0.00012035 | 0.00012035 |   0.0 |  0.00
+Modify  | 0.30117    | 0.30117    | 0.30117    |   0.0 |  2.90
+Other   |            | 0.0184     |            |       |  0.18
+
+Nlocal:           5252 ave        5252 max        5252 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3441 ave        3441 max        3441 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          91064 ave       91064 max       91064 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       182128 ave      182128 max      182128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 182128
+Ave neighs/atom = 34.677837
+Neighbor list builds = 35
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+1 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+delete_atoms group g_gone
+Deleted 1 atoms, new total = 5251
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.316 | 4.316 | 4.316 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     13700   0.00013442406  2491.9898     -19912.984      1691.1036    
+     14000   0.00013442408  2431.1574     -19877.903      1649.8217    
+Loop time of 2.55747 on 1 procs for 300 steps with 5251 atoms
+
+Performance: 1.362 ns/day, 17.616 hours/ns, 117.304 timesteps/s, 615.961 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.4308     | 2.4308     | 2.4308     |   0.0 | 95.05
+Neigh   | 0.044681   | 0.044681   | 0.044681   |   0.0 |  1.75
+Comm    | 0.0048972  | 0.0048972  | 0.0048972  |   0.0 |  0.19
+Output  | 3.9224e-05 | 3.9224e-05 | 3.9224e-05 |   0.0 |  0.00
+Modify  | 0.0727     | 0.0727     | 0.0727     |   0.0 |  2.84
+Other   |            | 0.004346   |            |       |  0.17
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3468 ave        3468 max        3468 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90938 ave       90938 max       90938 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       181876 ave      181876 max      181876 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 181876
+Ave neighs/atom = 34.63645
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+8 atoms in group g_old_ar
+create_atoms 2 single 21.306970344902325 12.272000328199525 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+9 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.316 | 4.316 | 4.316 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     14000   0.0001         3167.348      -19877.903      2149.8217    
+     14500   0.0001         3024.6809     -19787.221      2052.9871    
+     15000   0.00013442408  2830.7497     -19669.454      1921.3572    
+     15200   0.00013442408  2797.06       -19652.217      1898.4905    
+Loop time of 10.3443 on 1 procs for 1200 steps with 5252 atoms
+
+Performance: 1.347 ns/day, 17.813 hours/ns, 116.006 timesteps/s, 609.263 katom-step/s
+99.8% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.655      | 9.655      | 9.655      |   0.0 | 93.34
+Neigh   | 0.34531    | 0.34531    | 0.34531    |   0.0 |  3.34
+Comm    | 0.021664   | 0.021664   | 0.021664   |   0.0 |  0.21
+Output  | 0.00011959 | 0.00011959 | 0.00011959 |   0.0 |  0.00
+Modify  | 0.3036     | 0.3036     | 0.3036     |   0.0 |  2.93
+Other   |            | 0.01861    |            |       |  0.18
+
+Nlocal:           5252 ave        5252 max        5252 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3434 ave        3434 max        3434 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          89974 ave       89974 max       89974 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       179948 ave      179948 max      179948 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 179948
+Ave neighs/atom = 34.262757
+Neighbor list builds = 39
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+2 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+delete_atoms group g_gone
+Deleted 2 atoms, new total = 5250
+group g_gone delete
+variable n_gone_count delete
+run 300
+Per MPI rank memory allocation (min/avg/max) = 4.316 | 4.316 | 4.316 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     15200   0.00018673744  2725.7498     -19652.217      1849.3845    
+     15500   0.00018684231  2597.4763     -19578.286      1762.3526    
+Loop time of 2.59937 on 1 procs for 300 steps with 5250 atoms
+
+Performance: 1.863 ns/day, 12.882 hours/ns, 115.413 timesteps/s, 605.917 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.4703     | 2.4703     | 2.4703     |   0.0 | 95.04
+Neigh   | 0.044792   | 0.044792   | 0.044792   |   0.0 |  1.72
+Comm    | 0.0050443  | 0.0050443  | 0.0050443  |   0.0 |  0.19
+Output  | 3.7912e-05 | 3.7912e-05 | 3.7912e-05 |   0.0 |  0.00
+Modify  | 0.074522   | 0.074522   | 0.074522   |   0.0 |  2.87
+Other   |            | 0.004655   |            |       |  0.18
+
+Nlocal:           5250 ave        5250 max        5250 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3419 ave        3419 max        3419 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90045 ave       90045 max       90045 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180090 ave      180090 max      180090 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180090
+Ave neighs/atom = 34.302857
+Neighbor list builds = 5
+Dangerous builds = 0
+group g_gone2 region r_escape
+0 atoms in group g_gone2
+variable n_gone2 equal count(g_gone2)
+group g_gone2 delete
+variable n_gone2 delete
+group g_old_ar type 2
+9 atoms in group g_old_ar
+create_atoms 2 single 15.853576548700781 21.482372851779473 62.31 units box
+Created 1 atoms
+  using box units in orthogonal box = (0 0 0) to (43.448 43.448 108.62)
+  create_atoms CPU = 0.000 seconds
+group g_proj_tmp type 2
+10 atoms in group g_proj_tmp
+group g_proj_tmp subtract g_proj_tmp g_old_ar
+1 atoms in group g_proj_tmp
+velocity g_proj_tmp set 0.0 0.0 -491.4542866862656 units box
+fix fproj g_proj_tmp nve
+run 1200
+Per MPI rank memory allocation (min/avg/max) = 4.316 | 4.316 | 4.316 Mbytes
+   Step           Dt            Temp          PotEng         KinEng    
+     15500   0.0001         3333.7755     -19578.286      2262.3526    
+     16000   0.0001         3254.5108     -19538.208      2208.5623    
+     16500   0.0001         3095.1194     -19440.219      2100.3968    
+     16700   0.0001         3111.5733     -19454.886      2111.5627    
+Loop time of 10.6316 on 1 procs for 1200 steps with 5251 atoms
+
+Performance: 0.975 ns/day, 24.610 hours/ns, 112.871 timesteps/s, 592.685 katom-step/s
+99.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 9.931      | 9.931      | 9.931      |   0.0 | 93.41
+Neigh   | 0.36021    | 0.36021    | 0.36021    |   0.0 |  3.39
+Comm    | 0.021307   | 0.021307   | 0.021307   |   0.0 |  0.20
+Output  | 0.00012768 | 0.00012768 | 0.00012768 |   0.0 |  0.00
+Modify  | 0.30088    | 0.30088    | 0.30088    |   0.0 |  2.83
+Other   |            | 0.0181     |            |       |  0.17
+
+Nlocal:           5251 ave        5251 max        5251 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:           3459 ave        3459 max        3459 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:          90364 ave       90364 max       90364 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:       180728 ave      180728 max      180728 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 180728
+Ave neighs/atom = 34.417825
+Neighbor list builds = 40
+Dangerous builds = 0
+unfix fproj
+group g_proj_tmp delete
+group g_gone region r_escape
+0 atoms in group g_gone
+variable n_gone_count equal count(g_gone)
+group g_gone delete
+variable n_gone_count delete
+group g_old_ar type 2
+10 atoms in group g_old_ar
+Total wall time: 0:02:04

@@ -1,0 +1,88 @@
+# Ar -> Si(100) single-impact sputtering simulation
+# energy=100.0 eV, angle=0.0 deg from normal, seed=1
+units           metal
+dimension       3
+boundary        p p f
+atom_style      atomic
+
+# --- build the Si(100) slab -------------------------------------------
+lattice         diamond 5.431
+region          box block 0 8 0 8 0 15 units lattice
+create_box      2 box
+region          r_slab block 0 8 0 8 0 10 units lattice
+create_atoms    1 region r_slab
+
+mass            1 28.0855      # Si
+mass            2 39.948       # Ar (projectile species, added later)
+
+# --- potential: SW for Si-Si, ZBL splice for close-range Ar-Si/Si-Si ---
+pair_style      hybrid/overlay sw zbl 1.0 2.0
+pair_coeff      * * sw Si.sw Si Si
+pair_coeff      1 1 zbl 14.0 14.0    # Si-Si ZBL (splices in at short range only)
+pair_coeff      1 2 zbl 14.0 18.0    # Si-Ar ZBL (dominant channel for the impact)
+pair_coeff      2 2 zbl 18.0 18.0    # Ar-Ar ZBL (irrelevant, single projectile, but must be defined)
+
+neighbor        2.0 bin
+neigh_modify    delay 0 every 1 check yes
+
+# --- region definitions for the frozen / thermostat / free layout -----
+# Diamond-cubic conventional cell edge = a0; the slab spans z in [0, nz*a0]
+# in box units directly from the lattice command above (no runtime lookup
+# needed since nx/ny/nz/a0 are fixed at generation time).
+variable        z_frozen equal 4.0
+variable        z_thermo equal 4.0+6.0
+
+region          r_frozen block INF INF INF INF INF ${z_frozen} units box
+region          r_thermo block INF INF INF INF ${z_frozen} ${z_thermo} units box
+region          r_free   block INF INF INF INF ${z_thermo} INF units box
+
+group           g_frozen region r_frozen
+group           g_thermo region r_thermo
+group           g_free   region r_free
+group           g_mobile subtract all g_frozen
+
+# --- relax the slab at 300 K before firing -----------------------------
+velocity        g_mobile create 300.0 1 mom yes rot yes dist gaussian
+fix             fzero g_frozen setforce 0.0 0.0 0.0
+fix             ftherm g_thermo langevin 300.0 300.0 0.1 1
+fix             fnve g_mobile nve
+
+timestep        0.001    # ps  (metal units: ps). 1 fs pre-impact relaxation step.
+thermo          200
+thermo_style    custom step temp pe ke etotal
+run             2000     # 2 ps thermal relaxation
+
+# --- fire the projectile -----------------------------------------------
+variable        cx equal (bound(all,xmin)+bound(all,xmax))/2 + 0.0
+variable        cy equal (bound(all,ymin)+bound(all,ymax))/2 + 0.0
+variable        launch_z equal 62.31
+
+create_atoms    2 single ${cx} ${cy} ${launch_z} units box
+group           g_projectile type 2
+
+variable        speed_mps equal sqrt(2*100.0*1.602176634e-19/(39.948*1.66053906660e-27))
+variable        speed_A_ps equal v_speed_mps*1.0e-2      # m/s -> Angstrom/ps (metal units)
+variable        vz0 equal -v_speed_A_ps*cos(0.0*PI/180)
+variable        vx0 equal  v_speed_A_ps*sin(0.0*PI/180)
+
+velocity        g_projectile set ${vx0} 0.0 ${vz0} units box
+fix             fproj g_projectile nve
+
+# --- variable timestep: small during the cascade, larger once it settles
+fix             fdt all dt/reset 1 0.0001 0.002 0.02 units box
+
+compute         pe_atom all pe/atom
+thermo          100
+thermo_style    custom step dt temp pe ke etotal
+dump            d1 all custom 200 test100.dump id type x y z vx vy vz c_pe_atom
+
+run             1500
+
+# --- report: count atoms that left the slab through +z (sputtered) -----
+variable        z_escape equal 54.31+15.0
+variable        is_escaped atom "z > v_z_escape"
+group           g_escaped variable is_escaped
+variable        n_sputtered equal count(g_escaped)
+print           "SPUTTER_YIELD_RESULT n_sputtered=${n_sputtered} energy=100.0 angle=0.0 seed=1"
+
+write_dump      all custom test100.final.dump id type x y z vx vy vz c_pe_atom
