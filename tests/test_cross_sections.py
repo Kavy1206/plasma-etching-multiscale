@@ -57,3 +57,31 @@ def test_null_collision_frequency_is_finite_and_positive():
     # Benchmark requires nu*dt << 1 (their Table III: nu_e dt = 0.0158)
     assert nu_e * cfg.dt < 0.2, f"nu_e*dt = {nu_e * cfg.dt:.4f}"
     assert nu_i * cfg.dt < 0.2, f"nu_i*dt = {nu_i * cfg.dt:.4f}"
+
+
+def test_argon_set_loads_and_thresholds_are_correct():
+    from src.pic_mcc.cross_sections import load_gas_set
+    electrons, ions = load_gas_set("ar", "data/cross_sections/ar")
+    assert len(electrons) == 3 and len(ions) == 2
+    names = {p.name: p for p in electrons}
+    exc = electrons[[p.kind for p in electrons].index("excitation")]
+    ion = electrons[[p.kind for p in electrons].index("ionization")]
+    below = np.array([1.0, 5.0, 11.0])
+    assert np.all(exc(below) == 0.0)
+    assert np.all(ion(np.array([1.0, 5.0, 15.0])) == 0.0)
+    assert exc(np.array([20.0]))[0] > 0
+    assert ion(np.array([50.0]))[0] > 0
+
+
+def test_argon_ion_backscatter_is_nonnegative():
+    from src.pic_mcc.cross_sections import load_gas_set
+    _, ions = load_gas_set("ar", "data/cross_sections/ar")
+    back = ions[[p.kind for p in ions].index("backscatter")]
+    assert np.all(back(np.linspace(0.01, 2000, 5000)) >= 0.0)
+
+
+def test_argon_simulation_config_uses_argon_data_dir():
+    from src.pic_mcc.config import Config
+    cfg = Config(gas="ar", gamma_see=0.05)
+    assert "ar" in cfg.cross_section_dir
+    assert cfg.m_ion == pytest.approx(39.948 * 1.660538782e-27, rel=1e-6)

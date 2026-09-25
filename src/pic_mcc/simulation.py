@@ -29,7 +29,7 @@ from .boundaries import apply_absorbing_walls, emit_secondaries
 from .config import Config
 from .constants import E_CHARGE as E
 from .constants import K_B
-from .cross_sections import load_helium_set, max_collision_frequency
+from .cross_sections import load_gas_set, max_collision_frequency
 from .grid import Grid1D
 from .mcc import ElectronCollisions, IonCollisions, Species, kinetic_energy_ev
 from .poisson import PoissonSolver1D, electric_field
@@ -59,7 +59,7 @@ class Simulation:
         self.ckpt_path = Path(checkpoint_path)
         self.grid = Grid1D(cfg.length, cfg.n_cells)
         self.poisson = PoissonSolver1D(cfg.n_cells, self.grid.dx)
-        self.electron_procs, self.ion_procs = load_helium_set(cfg.cross_section_dir)
+        self.electron_procs, self.ion_procs = load_gas_set(cfg.gas, cfg.cross_section_dir)
         self.nu_max_e = max_collision_frequency(self.electron_procs, cfg.m_electron,
                                                  cfg.n_gas, energy_max_ev=1000.0)
         self.nu_max_i = max_collision_frequency(self.ion_procs, cfg.m_ion,

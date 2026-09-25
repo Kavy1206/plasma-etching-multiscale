@@ -61,6 +61,32 @@ HELIUM_ION_FILES = [
     ("Backscattering_He.csv",  "He+ -He backscatter",  "backscatter",  "cm", 0.0),
 ]
 
+# Analytic Phelps & Petrovic (1999) / Phelps (1994) argon set, tabulated from
+# the eduPIC reference implementation (Donko et al. 2021) -- see
+# data/cross_sections/ar/PROVENANCE.md for the formulas and full citation.
+ARGON_FILES = [
+    ("Elastic_Ar.csv",      "e-Ar elastic",    "elastic",     "lab", 0.0),
+    ("Excitation_Ar.csv",   "e-Ar -> Ar*",     "excitation",  "lab", 11.5),
+    ("Ionization_Ar.csv",   "e-Ar ionization", "ionization",  "lab", 15.8),
+]
+ARGON_ION_FILES = [
+    ("Isotropic_Ar.csv",      "Ar+ -Ar isotropic",    "elastic",      "cm", 0.0),
+    ("Backscattering_Ar.csv", "Ar+ -Ar backscatter",  "backscatter",  "cm", 0.0),
+]
+
+GAS_FILES = {"he": (HELIUM_FILES, HELIUM_ION_FILES), "ar": (ARGON_FILES, ARGON_ION_FILES)}
+
+
+def load_gas_set(gas: str, directory: str | Path):
+    """Returns (electron_processes, ion_processes) for gas in {'he', 'ar'}."""
+    if gas not in GAS_FILES:
+        raise ValueError(f"unknown gas {gas!r}")
+    electron_files, ion_files = GAS_FILES[gas]
+    d = Path(directory)
+    electrons = [load_table(d / f, n, k, fr, th) for f, n, k, fr, th in electron_files]
+    ions = [load_table(d / f, n, k, fr, th) for f, n, k, fr, th in ion_files]
+    return electrons, ions
+
 
 def load_helium_set(directory: str | Path):
     """Returns (electron_processes, ion_processes) for the Turner benchmark."""
