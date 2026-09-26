@@ -288,3 +288,23 @@ Potential used: Stillinger-Weber (LAMMPS-bundled `Si.sw`) + ZBL splice
 (~4.34 eV/atom) differs from Tersoff's (~4.63 eV/atom) -- per theory.md
 sec. 7, this sets part of the threshold value, so E_th from this MD should
 not be compared to a Tersoff-potential E_th without accounting for that.
+
+### IADF bug, caught consuming the data in Phase 3
+
+Found while writing the feature-scale model (below): the IEDF/IADF
+collection in `simulation.py` used `v[:,0]` as the wall-normal velocity
+component, but `push()` actually advances `v[:,2]` -- normal and
+perpendicular were swapped, giving a nonsense ~88 deg mean incidence angle
+for what should be near-normal, sheath-collimated ions. Energy data
+(`E_gnd`) is unaffected -- it uses the full 3-vector and doesn't depend on
+this decomposition, so `figures/ar_iedf_sweep.png` and the mean-energy-vs-
+pressure trend are unchanged and still valid.
+
+Fixed, then **re-ran only 5 mTorr** (the cheapest point) to get correct
+angle data for Phase 3. New result: mean angle 2.65 deg, median 0.96 deg,
+90th percentile 6.6 deg -- matches the theory.md sec. 6 collimation
+estimate (~1-2 deg half-width) well, a good independent sanity check that
+the fix is right. The other 4 pressures' saved `.npz` files still have the
+pre-fix (wrong) angle arrays; their energy data is fine and already used,
+but I did not have time to re-run all 5 for angle correctness, so Phase 3
+below uses the 5 mTorr condition specifically (the one with corrected data).
