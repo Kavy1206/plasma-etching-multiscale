@@ -71,12 +71,15 @@ class FeatureGrid:
         c0 = nx // 2 - trench_width_cells // 2
         c1 = c0 + trench_width_cells
         self.trench_cols = (c0, c1)
-        self.material[:mask_depth_cells, :] = 1.0
+        # Mask layer (top mask_depth_cells rows): solid except the open
+        # trench window. Below the mask: solid Si EVERYWHERE -- the actual
+        # wafer, unetched until ions/neutrals carve into it. (A previous
+        # version zeroed the whole trench column all the way to the grid
+        # bottom here, i.e. every run started with the trench already
+        # etched through -- caught because every width gave depth=320
+        # regardless of macro-step count.)
+        self.material[:, :] = 1.0
         self.material[:mask_depth_cells, c0:c1] = 0.0
-        # Below the mask: open Si everywhere within the trench footprint down
-        # to a "start" surface; solid Si below that.
-        self.material[mask_depth_cells:, :] = 1.0
-        self.material[mask_depth_cells:, c0:c1] = 0.0
         self.is_mask = np.zeros((nz, nx), dtype=bool)
         self.is_mask[:mask_depth_cells, :] = True
         self.is_mask[:mask_depth_cells, c0:c1] = False

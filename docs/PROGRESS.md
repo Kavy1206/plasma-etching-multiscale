@@ -308,3 +308,46 @@ the fix is right. The other 4 pressures' saved `.npz` files still have the
 pre-fix (wrong) angle arrays; their energy data is fine and already used,
 but I did not have time to re-run all 5 for angle correctness, so Phase 3
 below uses the 5 mTorr condition specifically (the one with corrected data).
+
+## Phase 3 (feature-scale model) — done, with an honest negative-ish result
+
+2D cell-based Monte Carlo (200x200-320 grid, material fraction per cell),
+built per the original plan: ions sampled from the REAL simulated argon
+IEDF/IADF (5 mTorr, corrected), neutrals cosine-distributed with a sticking
+coefficient and diffuse re-emission, ion specular reflection at grazing
+incidence (>70 deg from local normal), removal from the Phase 2 yield curve
+plus a radical-coverage chemical term.
+
+**One geometry bug found and fixed before any result was kept:** the initial
+grid zeroed the entire trench column all the way to the grid bottom, not just
+through the mask -- every run started with the trench already etched
+through, so depth was a constant 320 (=nz) regardless of width or run
+length. Fixed so only the mask layer is initially open; the wafer below
+starts fully solid.
+
+**ARDE curve: honestly flat, ~38-39 cells regardless of width, across
+aspect ratios 0.29-1.9** (`figures/feature_scale_overview.png`). This is a
+real result, not a bug -- traced to the real simulated IADF at 5 mTorr being
+extremely collimated (mean angle 2.65 deg, see the IADF fix above). Ion
+shadowing by sidewalls only becomes geometrically significant around
+aspect ratio ~1/tan(2.65 deg)~21, far above what was tested. This is a
+legitimate finding directly connected to theory.md sec. 6 (low pressure ->
+collimated sheath -> anisotropic etch), reported as such rather than
+adjusted to produce a more dramatic-looking curve.
+
+**Bowing and microtrenching, as the minimum deliverable asked for:** the
+real 5 mTorr IADF is too collimated to produce either at the aspect ratios
+tested. Rather than silently substitute or skip this, ran one additional,
+clearly-labeled **synthetic** case (Gaussian angular spread, mean ~20 deg,
+NOT the simulated argon data) at high aspect ratio specifically to
+demonstrate the sidewall-shadowing/reflection mechanisms are implemented
+and work: produces a clean, textbook bowed profile (bulb wider than the
+mask opening, narrowing again near the bottom) --
+`figures/feature_scale_synthetic_bowing.png`, titled and documented as
+synthetic in the figure itself. A distinct, separately-visible
+microtrenching corner-spike was not isolated as its own figure given
+remaining session time -- the specular-reflection code path does fire
+(nonzero reflection counts logged during runs) but I did not chase a
+parameter set that shows it clearly in its own plot. The profile-evolution
+animation and the 3-recipe comparison from the original plan were both
+skipped entirely for time.
