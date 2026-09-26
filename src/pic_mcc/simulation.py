@@ -137,8 +137,15 @@ class Simulation:
             wall_i, xi_abs, vi_abs = apply_absorbing_walls(self.ions, cfg.length)
             if self.step >= self.avg_start_step and wall_i.size and self.collect_iedf:
                 E_ion = kinetic_energy_ev(vi_abs, cfg.m_ion)
-                v_normal = np.abs(vi_abs[:, 0])
-                v_perp = np.sqrt(vi_abs[:, 1] ** 2 + vi_abs[:, 2] ** 2)
+                # push() advances v[:,2] (see push() calls above) -- that is
+                # the wall-normal (1D electrostatic) direction, not v[:,0].
+                # An earlier version of this line used v[:,0] as "normal",
+                # swapping normal and perpendicular and producing a nonsense
+                # ~88 deg mean IADF angle for what should be near-normal
+                # sheath-accelerated incidence. Caught while consuming this
+                # data in the Phase 3 feature-scale model; see PROGRESS.md.
+                v_normal = np.abs(vi_abs[:, 2])
+                v_perp = np.sqrt(vi_abs[:, 0] ** 2 + vi_abs[:, 1] ** 2)
                 angle_deg = np.degrees(np.arctan2(v_perp, np.maximum(v_normal, 1e-30)))
                 for w in (0, 1):
                     sel = wall_i == w
