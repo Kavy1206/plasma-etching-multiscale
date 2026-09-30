@@ -1,0 +1,116 @@
+[
+ {
+  "energy_ev": 100.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "total": 0,
+  "n_shots": 10,
+  "yield_mean": 0.0,
+  "elapsed_s": 101.1
+ },
+ {
+  "energy_ev": 200.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1
+  ],
+  "total": 1,
+  "n_shots": 10,
+  "yield_mean": 0.1,
+  "elapsed_s": 110.1
+ },
+ {
+  "energy_ev": 25.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "total": 0,
+  "n_shots": 10,
+  "yield_mean": 0.0,
+  "elapsed_s": 90.5
+ },
+ {
+  "energy_ev": 300.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "total": 1,
+  "n_shots": 10,
+  "yield_mean": 0.1,
+  "elapsed_s": 116.7
+ },
+ {
+  "energy_ev": 50.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0
+  ],
+  "total": 1,
+  "n_shots": 10,
+  "yield_mean": 0.1,
+  "elapsed_s": 95.0
+ },
+ {
+  "energy_ev": 500.0,
+  "sputtered_per_shot": [
+   0,
+   0,
+   1,
+   1,
+   2,
+   0,
+   0,
+   1,
+   2,
+   0
+  ],
+  "total": 7,
+  "n_shots": 10,
+  "yield_mean": 0.7,
+  "elapsed_s": 124.7
+ }
+]

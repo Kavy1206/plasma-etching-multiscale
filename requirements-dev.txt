@@ -1,0 +1,6 @@
+# Full stack for running every simulation, script and test locally.
+-r requirements.txt
+scipy
+pytest
+lammps
+ovito

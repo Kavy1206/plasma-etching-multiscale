@@ -29,8 +29,8 @@ clearly-labeled *synthetic* broad-angle case demonstrates the bowing
 mechanism works.
 
 **What's simply not done:** LAMMPS angle sweep (Y(θ)) and the optional
-Cl-passivation ALE-window run; the feature-scale profile-evolution
-animation and 3-recipe comparison; re-running the two thin argon pressure
+Cl-passivation ALE-window run; the feature-scale 3-recipe comparison (the profile-evolution
+animation was added afterwards, see the addendum below); re-running the two thin argon pressure
 points at full statistics; first-party LXCat argon cross sections (used
 eduPIC's analytic fits instead, documented); actual Streamlit Cloud
 deployment (app is written and smoke-tested, not deployed — no account
@@ -52,6 +52,37 @@ re-run the LAMMPS campaign at real independent-impact statistics (100+
 impacts/energy, fresh slab each time) so the yield-curve fit is actually
 constrained. Right now the repo's weakest claim is E_th, and that's the
 cheapest one to fix with more compute.
+
+---
+
+## Addendum (Sept 30, after the main session): visual interface
+
+Added so the project can be *seen*, not just read:
+
+- `src/feature_scale/viz.py`: one shared driver/renderer used by both the app
+  and the GIF script, so what's shown on GitHub and in the app is the same
+  code. Parameters match the runs reported above.
+- `figures/profile_evolution_{real,synthetic}.gif`: the profile-evolution
+  animation the original plan called for. Real argon ions: trench width stays
+  exactly 50 cells, straight walls. Synthetic broad-angle: open width grows
+  from 32 to 40 cells, i.e. bowing.
+- `app/streamlit_app.py`: four tabs (pipeline and what's real / reactor /
+  atoms / live etch). Only the etch tab computes live; everything else reads
+  the project's own precomputed results from `app/data/`. The old interpolation
+  app was replaced: its voltage slider was a linear scaling of 300 V data, not
+  simulation, and its profile section was text only.
+- `tests/test_app.py` drives the app with Streamlit's AppTest harness,
+  including real button clicks for both ion sources (47 tests total).
+- Only 5 mTorr angle data is bundled (the other pressures' saved angles
+  predate the IADF fix).
+
+Model detail surfaced while rendering, worth knowing for an interview: cells
+stop blocking particles once material fraction drops below 0.5, so the
+"open" region is partially eroded rather than zero. That threshold defines the
+surface; it is a simplification of the cell-based approach, not a bug, but the
+fractional fill is visible in the GIFs and the app says so.
+
+Not deployed to Streamlit Community Cloud (needs your account).
 
 ---
 

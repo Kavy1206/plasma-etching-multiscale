@@ -5,3 +5,5 @@ runs/*.npz
 runs/*.npz.rng.pkl
 *.log
 .pytest_cache/
+*.zip
+*.bundle

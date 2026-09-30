@@ -1,7 +1,6 @@
+# Minimal set for the Streamlit app (what share.streamlit.io installs).
 numpy
-scipy
 matplotlib
-pytest
-lammps
-ovito
+pandas
+pillow
 streamlit

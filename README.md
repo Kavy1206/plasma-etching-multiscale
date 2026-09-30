@@ -12,6 +12,29 @@ log, including every bug found and fixed, and
 [`docs/STUDY.md`](docs/STUDY.md) for a Q&A walkthrough written for a
 technical-interview follow-up.
 
+## See it
+
+**The feature-scale model etching a trench, frame by frame** (same code the
+live app runs):
+
+| Real simulated argon ions (5 mTorr, mean angle 2.65°) | Synthetic broad-angle ions (mechanism demo, not simulated argon) |
+|---|---|
+| ![real](figures/profile_evolution_real.gif) | ![synthetic](figures/profile_evolution_synthetic.gif) |
+
+With the real, highly collimated ions the walls stay straight. Loosen the
+angular spread and the trench bows out. Gray fill inside the etched region is
+partially eroded material: cells under 0.5 material fraction stop blocking
+particles, so the model counts them as open.
+
+**Interactive app** (`app/streamlit_app.py`): reactor validation overlay, argon
+IEDF vs a pressure slider, the MD yield curve and damage image, and a *live*
+etch run where you choose the ion source, trench width, sticking and etch time.
+
+```bash
+pip install -r requirements.txt
+streamlit run app/streamlit_app.py
+```
+
 ## Validation
 
 **Reactor-scale PIC-MCC, validated against Turner et al. (2013), Case 1**
@@ -87,20 +110,20 @@ src/pic_mcc/          1D3V PIC-MCC reactor solver (helium + argon)
 src/md_lammps/         LAMMPS input generation + impact-series driver
 src/feature_scale/      2D Monte Carlo feature-profile model
 scripts/                run/validation/analysis drivers used to produce every result above
-app/                    Streamlit interactive demo (see note below)
+app/                    Streamlit app + app/data (small bundled results it reads)
 docs/theory.md          Derivations: Bohm criterion, sheath physics, ALE window
 docs/STUDY.md           Interview-prep Q&A, tied to this repo's actual results
 docs/PROGRESS.md        Full build log: what's validated, every bug found and fixed, what's cut
 figures/                Every figure above, regeneratable from scripts/
 data/                   Cross sections (He: Turner benchmark; Ar: Phelps/Petrović via eduPIC), benchmark reference
-tests/                  42 unit + integration tests (pytest)
+tests/                  47 unit, integration and app-smoke tests (pytest)
 ```
 
 ## Run it
 
 ```bash
-pip install -r requirements.txt
-python -m pytest tests -q                     # 42 tests
+pip install -r requirements-dev.txt           # full stack: LAMMPS, OVITO, pytest
+python -m pytest tests -q                     # 47 tests
 python -m scripts.verify_core                  # cold-plasma-oscillation sanity check
 python -m scripts.run_case1 250                # resume/advance the Case 1 validation run
 python -m scripts.validate_case1               # compute the validation table above
@@ -115,15 +138,15 @@ every long run (Case 1 in particular, 512,000 steps) was built to advance in
 bounded chunks rather than run start-to-finish in one call. See PROGRESS.md
 for the actual wall-clock costs.
 
-### Streamlit app
+### Deploying the app
 
-`app/streamlit_app.py` takes pressure/voltage/feature-width/passivation
-sliders and interpolates across the precomputed lookup table this project
-generated (not live PIC-MCC). **Not deployed to Streamlit Community Cloud**
-— this session's environment has no Streamlit Cloud account access. To
-deploy: push this repo to GitHub, go to share.streamlit.io, point it at
-`app/streamlit_app.py`. Takes about five minutes. Run locally with
-`streamlit run app/streamlit_app.py`.
+Not deployed yet (no Streamlit Cloud account access from the build
+environment). To deploy: push to GitHub, go to share.streamlit.io, choose this
+repo, main file `app/streamlit_app.py`. `requirements.txt` is deliberately the
+*minimal* app set (numpy, matplotlib, pandas, pillow, streamlit) so the deploy
+doesn't try to install LAMMPS/OVITO; `requirements-dev.txt` is the full stack.
+Reactor and MD results in the app are precomputed files in `app/data/`
+(`scripts/build_app_data.py` regenerates them); only the etch tab computes live.
 
 ## Limitations
 
@@ -150,8 +173,9 @@ of these is in `docs/PROGRESS.md`:
   — a real finding at the tested aspect ratios (0.3–1.9), not evidence the
   model can't produce ARDE, bowing, or microtrenching: a separate synthetic
   broad-angle case demonstrates the bowing mechanism directly. No
-  microtrenching-specific figure, no profile-evolution animation, no
-  3-recipe comparison — all cut for time.
+  microtrenching-specific figure and no 3-recipe comparison — cut for time.
+  (The profile-evolution animation was added after the main session; see
+  PROGRESS.md.)
 - **Argon cross sections are analytic fits (Phelps & Petrović 1999 /
   Phelps 1994), sourced via the eduPIC reference code**, not a first-party
   LXCat pull — LXCat itself was unreachable from this environment. See
