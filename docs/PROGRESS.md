@@ -1,5 +1,60 @@
 # PROGRESS
 
+## FINAL STATUS (end of Session 3) — read this first
+
+**What you can claim with full confidence:** the reactor-scale PIC-MCC code
+is validated against a published external benchmark (Turner et al. 2013,
+Case 1) to 1.2% mid-plane ion density, 3.8% electron temperature, 0.65%
+full-profile RMS — a real 512,000-step run, compared point-by-point against
+their reference data, after finding and fixing a real physics bug (ion
+centre-of-mass energy off by 2×) and re-running from scratch rather than
+keeping the pre-fix number. This is the credibility foundation of the whole
+repo and it's solid.
+
+**What's real but statistics-limited:** the argon production IEDF sweep (5
+real pressure points, genuine simulated data, correct physical trend) has
+two thin points (20, 100 mTorr — 415 and 11 samples) from a checkpoint bug
+fixed mid-session but not backfilled. The LAMMPS sputter yield is real MD
+(two real bugs found and fixed: vacuum headroom, and a projectile-selection
+bug that was silently re-launching embedded atoms) but at 10
+sequential-not-independent shots/energy — only the 500 eV point (Y=0.7,
+matches literature) should be read with real confidence; the fitted E_th
+has an uncertainty larger than its own value.
+
+**What's a genuine finding, not a gap:** the feature-scale ARDE curve is
+flat across the tested aspect ratios using the real, highly-collimated
+(2.65°) simulated argon IADF — traced to a real physical cause (shadowing
+needs aspect ratio ~20+ at this collimation), not tuned away. A separate,
+clearly-labeled *synthetic* broad-angle case demonstrates the bowing
+mechanism works.
+
+**What's simply not done:** LAMMPS angle sweep (Y(θ)) and the optional
+Cl-passivation ALE-window run; the feature-scale profile-evolution
+animation and 3-recipe comparison; re-running the two thin argon pressure
+points at full statistics; first-party LXCat argon cross sections (used
+eduPIC's analytic fits instead, documented); actual Streamlit Cloud
+deployment (app is written and smoke-tested, not deployed — no account
+access from this environment).
+
+**Five real bugs were found and fixed this session**, each caught by
+either a numerical cross-check, an independent reference implementation, or
+a physically-implausible result that got investigated rather than
+accepted: (1) ion-neutral CM energy off by 2× — the big one, drove the
+Case 1 re-run; (2) IEDF/IADF checkpoint data loss on resume; (3) IADF
+normal/perpendicular component swap; (4) LAMMPS vacuum headroom too small
+for the adaptive timestep; (5) LAMMPS projectile mis-selection re-launching
+embedded atoms. All documented below with what they affected and how they
+were caught — that history is worth having ready for an interview, not
+just the clean final numbers.
+
+**Single most important next step, if there were another session:**
+re-run the LAMMPS campaign at real independent-impact statistics (100+
+impacts/energy, fresh slab each time) so the yield-curve fit is actually
+constrained. Right now the repo's weakest claim is E_th, and that's the
+cheapest one to fix with more compute.
+
+---
+
 ## Session 2 — Phase 1, steps 1–4 (grid, push, CIC, Poisson)
 
 ### Decisions taken
