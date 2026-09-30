@@ -416,7 +416,10 @@ aspect ratios 0.29-1.9** (`figures/feature_scale_overview.png`). This is a
 real result, not a bug -- traced to the real simulated IADF at 5 mTorr being
 extremely collimated (mean angle 2.65 deg, see the IADF fix above). Ion
 shadowing by sidewalls only becomes geometrically significant around
-aspect ratio ~1/tan(2.65 deg)~21, far above what was tested. This is a
+aspect ratio ~1/tan(2.65 deg)~21 (a rough geometric estimate; aspect
+ratios that high were NOT run, so this explanation is a hypothesis
+consistent with the flat result, not something demonstrated), far above what
+was tested. This is a
 legitimate finding directly connected to theory.md sec. 6 (low pressure ->
 collimated sheath -> anisotropic etch), reported as such rather than
 adjusted to produce a more dramatic-looking curve.

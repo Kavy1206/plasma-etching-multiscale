@@ -59,12 +59,14 @@ would silently invalidate the Case 1 comparison.
 Ions entering the sheath must already be moving at least the Bohm velocity
 $u_B=\sqrt{k_BT_e/M}$, or no stable sheath can form — derived in
 `docs/theory.md` §2 from requiring the sheath's Poisson equation have a
-monotonic (non-oscillatory) solution. It's a concrete, cheap sanity check I
-actually used: the Bohm flux formula $J_i=0.61\,n_0\,e\,u_B$ predicts 0.205
-A/m² for Case 1's parameters, against Turner's reported 0.219 A/m² — 6.4%
-off, which is the expected size of error from that formula's flat-presheath
-assumption, not a red flag. If my PIC's wall flux had been off by 2× from
-that estimate, that's where I'd have started debugging.
+monotonic (non-oscillatory) solution. It gives a cheap sanity check I
+*derived but did not run against the code*: the Bohm flux formula
+$J_i=0.61\,n_0\,e\,u_B$ predicts 0.205 A/m² for Case 1's parameters, against
+Turner's reported 0.219 A/m² (6.4% off, about what that formula's
+flat-presheath assumption costs). My simulation never recorded wall ion flux,
+so I can't claim it matched; the Case 1 validation rests on the density and
+temperature profiles instead. Comparing the simulated wall flux to 0.219 A/m²
+would be a good extra check to add.
 
 ### "Explain the null-collision Monte Carlo method."
 
@@ -114,11 +116,12 @@ It is, but it needs enough aspect ratio for sidewall shadowing to matter
 geometrically, and that threshold depends on how collimated the incoming
 ion angular distribution is. The real simulated IADF at 5 mTorr has a mean
 angle of 2.65° from normal (see `docs/theory.md` §6's derivation of why low
-pressure means a collimated sheath). Shadowing becomes significant roughly
-when aspect ratio exceeds $1/\tan(2.65°)\approx21$ — the widths I tested
-only reached aspect ratio 1.9. So a flat ARDE curve in that range is the
-*correct* prediction for this specific, low-pressure, highly anisotropic
-condition, not a failure of the model. I demonstrated the model can produce
+pressure means a collimated sheath). By a rough geometric estimate,
+shadowing becomes significant around aspect ratio $1/\tan(2.65°)\approx21$ —
+the widths I tested only reached aspect ratio 1.9. That estimate is a
+hypothesis: I did not run aspect ratios that high, so I haven't shown the
+curve turns over there. What I can say is that a flat curve in the tested
+range is consistent with that explanation, not a sign the model is broken. I demonstrated the model can produce
 ARDE-adjacent effects (specifically bowing) by re-running with a
 deliberately broadened synthetic angular distribution — clean, textbook
 bowed profile, and I labeled that case as synthetic everywhere, not real
