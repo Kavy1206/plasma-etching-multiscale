@@ -1,4 +1,4 @@
-# STUDY — interview-prep Q&A
+# STUDY
 
 Every answer here is tied to what *this repo's code and results* actually
 show, not a generic textbook answer. Numbers are pulled from
