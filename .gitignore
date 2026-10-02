@@ -7,3 +7,5 @@ runs/*.npz.rng.pkl
 .pytest_cache/
 *.zip
 *.bundle
+runs/
+.DS_Store
