@@ -5,8 +5,7 @@ atomistic sputter-yield calculations and a feature-scale etch profile
 simulator — built to understand, from first principles, how plasma
 conditions in a reactor turn into the etch profile on a wafer.
 
-Built as an interview-portfolio project for Applied Materials summer
-internship recruiting (semiconductor equipment / process engineering). See
+See
 [`docs/PROGRESS.md`](docs/PROGRESS.md) for the full session-by-session build
 log, including every bug found and fixed, and
 [`docs/STUDY.md`](docs/STUDY.md) for a Q&A walkthrough written for a
